@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #135bec;
+  --color-secondary: #0f172a;
+  --color-background-light: #f6f6f8;
+  --font-display: "Inter", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  body {
+    font-family: "Inter", sans-serif;
+    @apply bg-white text-[#111318] antialiased;
+  }
+}
+
+@layer components {
+  .material-symbols-outlined {
+    font-variation-settings:
+      "FILL" 0,
+      "wght" 400,
+      "GRAD" 0,
+      "opsz" 24;
+  }
+
+  .glass-container {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  }
+
+  .floating-element {
+    animation: floating 6s ease-in-out infinite;
+  }
+
+  .data-glow {
+    filter: drop-shadow(0 0 8px rgba(19, 91, 236, 0.3));
+  }
+
+  .browser-chrome {
+    background: linear-gradient(to bottom, #f0f2f4, #e2e8f0);
+    border-bottom: 1px solid #cbd5e1;
+  }
+
+  .cta-grid {
+    background-image: radial-gradient(
+      circle at 2px 2px,
+      rgba(255, 255, 255, 0.15) 1px,
+      transparent 0
+    );
+    background-size: 32px 32px;
+  }
+}
+
+@keyframes floating {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Auth Page Slide Animations */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* View Transition API Support */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(auth-panel) {
+  animation: 0.5s ease-out both slideOutToLeft;
+}
+
+::view-transition-new(auth-panel) {
+  animation: 0.5s ease-out both slideInFromRight;
+}
+
+/* Auth Panel Animation Classes */
+.auth-panel-left {
+  animation: slideInFromLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.auth-panel-right {
+  animation: slideInFromRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.auth-form-content {
+  animation: fadeSlideIn 0.5s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+/* Page Transition Wrapper */
+.page-transition-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.page-enter {
+  animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.page-exit {
+  animation: slideOutToLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.page-enter-reverse {
+  animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.page-exit-reverse {
+  animation: slideOutToRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Homepage Scrollbar */
+.home-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.home-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.home-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.home-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Smooth fade-in animation for page content */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Studio Canvas Grid Pattern */
+.studio-canvas-grid {
+  background-image: 
+    linear-gradient(#f0f2f5 1px, transparent 1px),
+    linear-gradient(90deg, #f0f2f5 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Custom Tiny Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
