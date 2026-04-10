@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { TranslationProvider } from './context/TranslationContext';
+import { DatasetProvider } from './context/DatasetContext';
 import LandingPage from './pages/LandingPage';
 import AuthLayout from './components/AuthLayout';
 import LoginForm from './components/LoginForm';
@@ -9,13 +11,16 @@ import ForgotPasswordForm from './components/ForgotPasswordForm';
 import HomePage from './pages/HomePage';
 import DatasetsPage from './pages/DatasetsPage';
 import StudioPage from './pages/StudioPage';
+import SettingsPage from './pages/SettingsPage';
 import PageLoader from './components/PageLoader';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <PageLoader />
+      <TranslationProvider>
+        <DatasetProvider>
+          <Router>
+          <PageLoader />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={
@@ -37,9 +42,12 @@ function App() {
           <Route path="/datasets" element={<DatasetsPage />} />
           <Route path="/studio" element={<StudioPage />} />
           <Route path="/studio/:dashboardId" element={<StudioPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </Router>
-    </AuthProvider>
+      </DatasetProvider>
+    </TranslationProvider>
+  </AuthProvider>
   );
 }
 

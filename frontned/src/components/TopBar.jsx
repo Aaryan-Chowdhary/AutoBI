@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../context/TranslationContext';
 
-function TopBar({ pageTitle = 'Workspace Home' }) {
+function TopBar({ pageTitle = 'Workspace Home', onSearchChange }) {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  
   const displayName = user?.name || 'Guest';
-  const displayInitials = user?.initials || 'G';
+  const displayInitials = user?.initials || (user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'G');
   const displayRole = user?.role === 'admin' ? 'Admin' : 'Member';
-  const avatarColor = user?.avatarColor || 'from-gray-400 to-gray-500';
+  const avatarColor = user?.avatarColor || 'from-primary to-blue-600';
   const [searchQuery, setSearchQuery] = useState('');
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -47,7 +50,10 @@ function TopBar({ pageTitle = 'Workspace Home' }) {
             type="text"
             placeholder="Search dashboards, datasets..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (onSearchChange) onSearchChange(e.target.value);
+            }}
             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"
           />
         </div>
@@ -109,8 +115,12 @@ function TopBar({ pageTitle = 'Workspace Home' }) {
               <p className="text-sm font-semibold text-gray-800 leading-tight">{displayName}</p>
               <p className="text-[11px] text-gray-400">{displayRole}</p>
             </div>
-            <div className={`w-10 h-10 rounded-full bg-linear-to-br ${avatarColor} flex items-center justify-center text-white font-bold text-sm ring-2 ring-white shadow-md`}>
-              {displayInitials}
+            <div className={`w-10 h-10 rounded-full bg-linear-to-br ${avatarColor} flex items-center justify-center text-white font-bold text-sm ring-2 ring-white shadow-md overflow-hidden shrink-0`}>
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                displayInitials
+              )}
             </div>
           </button>
 
@@ -124,21 +134,17 @@ function TopBar({ pageTitle = 'Workspace Home' }) {
               <div className="py-1">
                 <button className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-3 transition-colors">
                   <span className="material-symbols-outlined text-lg text-gray-400">person</span>
-                  My Profile
+                  {t('profile_settings')}
                 </button>
                 <button className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-3 transition-colors">
                   <span className="material-symbols-outlined text-lg text-gray-400">settings</span>
-                  Account Settings
-                </button>
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-3 transition-colors">
-                  <span className="material-symbols-outlined text-lg text-gray-400">help</span>
-                  Help & Support
+                  {t('settings')}
                 </button>
               </div>
               <div className="border-t border-gray-100 pt-1">
                 <button className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors">
                   <span className="material-symbols-outlined text-lg">logout</span>
-                  Sign Out
+                  {t('logout')}
                 </button>
               </div>
             </div>

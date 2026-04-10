@@ -37,7 +37,7 @@ function LandingPage() {
           <nav className="hidden md:flex items-center gap-8">
             <a className="text-sm font-medium text-gray-600 hover:text-primary transition-colors" href="#workflow">Workflow</a>
             <a className="text-sm font-medium text-gray-600 hover:text-primary transition-colors" href="#features">Features</a>
-            <a className="text-sm font-medium text-gray-600 hover:text-primary transition-colors" href="#pricing">Pricing</a>
+            <a className="text-sm font-medium text-gray-600 hover:text-primary transition-colors" href="#pricing">Plans</a>
             <button
               onClick={() => setIsDark(!isDark)}
               className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center -ml-2"
@@ -204,17 +204,17 @@ function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="flex flex-col items-center text-center group">
                 <div className="size-14 rounded-2xl bg-primary flex items-center justify-center text-white mb-8 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-2xl">link</span>
-                </div>
-                <h4 className="text-xl font-bold mb-4 text-[#111318]">Connect</h4>
-                <p className="text-gray-500 text-sm leading-relaxed px-4">Integrate with 100+ data sources instantly. SQL, SaaS apps, and CSVs unite in a single source of truth.</p>
-              </div>
-              <div className="flex flex-col items-center text-center group">
-                <div className="size-14 rounded-2xl bg-primary flex items-center justify-center text-white mb-8 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
                   <span className="material-symbols-outlined text-2xl">magic_button</span>
                 </div>
                 <h4 className="text-xl font-bold mb-4 text-[#111318]">Clean</h4>
                 <p className="text-gray-500 text-sm leading-relaxed px-4">Automated data prep and cleaning powered by AI. Transform messy rows into structured gold automatically.</p>
+              </div>
+              <div className="flex flex-col items-center text-center group">
+                <div className="size-14 rounded-2xl bg-primary flex items-center justify-center text-white mb-8 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-2xl">database</span>
+                </div>
+                <h4 className="text-xl font-bold mb-4 text-[#111318]">Store</h4>
+                <p className="text-gray-500 text-sm leading-relaxed px-4">Secure cloud data warehouse integration. Store your cleaned data reliably with automatic scaling and backups.</p>
               </div>
               <div className="flex flex-col items-center text-center group">
                 <div className="size-14 rounded-2xl bg-primary flex items-center justify-center text-white mb-8 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
@@ -232,33 +232,33 @@ function LandingPage() {
           <div className="max-w-[1280px] mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
               <div>
-                <h2 className="text-4xl font-black tracking-tight mb-12 text-[#111318]">Powerful Features for <br />Modern Teams</h2>
+                <h2 className="text-4xl font-black tracking-tight mb-12 text-[#111318]">Your essential <br />data toolkit</h2>
                 <div className="space-y-10">
                   <div className="flex gap-6">
                     <div className="shrink-0 size-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-primary shadow-sm">
-                      <span className="material-symbols-outlined">auto_fix_high</span>
+                      <span className="material-symbols-outlined">cleaning_services</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-bold mb-2 text-[#111318]">Auto Data Cleaning</h4>
-                      <p className="text-gray-500 text-sm leading-relaxed">Our engine automatically identifies duplicates, handles null values, and suggests data types so your reports are always accurate.</p>
+                      <h4 className="text-lg font-bold mb-2 text-[#111318]">Clean Raw Data</h4>
+                      <p className="text-gray-500 text-sm leading-relaxed">Automatically identify duplicates, handle null values, and apply data types so your files are ready for analysis in seconds.</p>
                     </div>
                   </div>
                   <div className="flex gap-6">
                     <div className="shrink-0 size-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-primary shadow-sm">
-                      <span className="material-symbols-outlined">edit_square</span>
+                      <span className="material-symbols-outlined">folder</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-bold mb-2 text-[#111318]">Power BI-Like Editor</h4>
-                      <p className="text-gray-500 text-sm leading-relaxed">Leverage your existing skills with a familiar canvas, DAX-like expressions, and advanced custom visuals optimized for the web.</p>
+                      <h4 className="text-lg font-bold mb-2 text-[#111318]">Store Your Files</h4>
+                      <p className="text-gray-500 text-sm leading-relaxed">Keep your cleaned datasets securely stored. Easily access, manage, and retrieve your work whenever you need it.</p>
                     </div>
                   </div>
                   <div className="flex gap-6">
                     <div className="shrink-0 size-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-primary shadow-sm">
-                      <span className="material-symbols-outlined">groups</span>
+                      <span className="material-symbols-outlined">dashboard</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-bold mb-2 text-[#111318]">Real-Time Collaboration</h4>
-                      <p className="text-gray-500 text-sm leading-relaxed">Multiple users can edit the same report simultaneously. Leave comments directly on data points and tag stakeholders.</p>
+                      <h4 className="text-lg font-bold mb-2 text-[#111318]">Insights & Dashboards</h4>
+                      <p className="text-gray-500 text-sm leading-relaxed">Use our intuitive editor to build visual dashboards. Transform rows of data into beautiful charts and clear insights instantly.</p>
                     </div>
                   </div>
                 </div>
@@ -266,26 +266,26 @@ function LandingPage() {
               <div className="grid grid-cols-2 gap-6 pt-12">
                 <div className="space-y-6">
                   <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                    <span className="material-symbols-outlined text-primary mb-6 text-2xl">database</span>
-                    <h5 className="font-bold text-lg mb-2 text-[#111318]">100+ Connectors</h5>
-                    <p className="text-xs text-gray-500 leading-relaxed">Native integrations with Snowflake, BigQuery, and more.</p>
+                    <span className="material-symbols-outlined text-primary mb-6 text-2xl">upload_file</span>
+                    <h5 className="font-bold text-lg mb-2 text-[#111318]">Instant Uploads</h5>
+                    <p className="text-xs text-gray-500 leading-relaxed">Drag and drop your CSV or Excel files seamlessly.</p>
                   </div>
                   <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                     <span className="material-symbols-outlined text-primary mb-6 text-2xl">bolt</span>
-                    <h5 className="font-bold text-lg mb-2 text-[#111318]">High Performance</h5>
-                    <p className="text-xs text-gray-500 leading-relaxed">Sub-second query response times on billions of rows.</p>
+                    <h5 className="font-bold text-lg mb-2 text-[#111318]">Fast Processing</h5>
+                    <p className="text-xs text-gray-500 leading-relaxed">No lag or waiting times, even for large spreadsheets.</p>
                   </div>
                 </div>
                 <div className="space-y-6 pt-12">
                   <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <span className="material-symbols-outlined text-primary mb-6 text-2xl font-bold">security</span>
-                    <h5 className="font-bold text-lg mb-2 text-[#111318]">SOC2 Type II</h5>
-                    <p className="text-xs text-gray-500 leading-relaxed">Enterprise-grade security and row-level access control at every layer.</p>
+                    <span className="material-symbols-outlined text-primary mb-6 text-2xl font-bold">save</span>
+                    <h5 className="font-bold text-lg mb-2 text-[#111318]">Easy Exports</h5>
+                    <p className="text-xs text-gray-500 leading-relaxed">Download your clean data or dashboard reports in one click.</p>
                   </div>
                   <div className="bg-primary p-8 rounded-3xl shadow-xl shadow-primary/30 text-white">
-                    <span className="material-symbols-outlined mb-6 text-2xl">psychology</span>
-                    <h5 className="font-bold text-lg mb-2">Smart Insights</h5>
-                    <p className="text-xs text-white/80 leading-relaxed">AI identifies trends and anomalies automatically in the background.</p>
+                    <span className="material-symbols-outlined mb-6 text-2xl">auto_awesome</span>
+                    <h5 className="font-bold text-lg mb-2">Smart Actions</h5>
+                    <p className="text-xs text-white/80 leading-relaxed">Let AI suggest chart types and automatically detect data categories.</p>
                   </div>
                 </div>
               </div>
@@ -304,13 +304,13 @@ function LandingPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-8">
               {/* Starter Plan */}
               <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
                 <div className="mb-8">
                   <h4 className="text-lg font-bold text-[#111318] mb-2">Starter</h4>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-[#111318]">$0</span>
+                    <span className="text-4xl font-black text-[#111318]">₹0</span>
                     <span className="text-gray-400 text-sm font-medium">/mo</span>
                   </div>
                 </div>
@@ -344,7 +344,7 @@ function LandingPage() {
                 <div className="mb-8">
                   <h4 className="text-lg font-bold text-[#111318] mb-2">Pro</h4>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-primary">$79</span>
+                    <span className="text-4xl font-black text-primary">₹99</span>
                     <span className="text-gray-400 text-sm font-medium">/mo</span>
                   </div>
                 </div>
@@ -374,67 +374,14 @@ function LandingPage() {
                 </button>
               </div>
 
-              {/* Enterprise Plan */}
-              <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                <div className="mb-8">
-                  <h4 className="text-lg font-bold text-[#111318] mb-2">Enterprise</h4>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-[#111318]">Custom</span>
-                  </div>
-                </div>
-                <ul className="space-y-4 mb-8 flex-1">
-                  <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                    <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    Advanced Security (SSO)
-                  </li>
-                  <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                    <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    Dedicated Account Manager
-                  </li>
-                  <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                    <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    Custom Data Connectors
-                  </li>
-                </ul>
-                <button className="w-full py-4 rounded-xl border-2 border-gray-100 text-gray-600 font-bold hover:bg-gray-50 transition-colors">
-                  Contact Sales
-                </button>
-              </div>
+
             </div>
           </div>
         </section>
 
       </main>
 
-      {/* Modern Minimal Footer */}
-      <footer className="bg-white border-t border-gray-100 pt-16 pb-12">
-        <div className="max-w-[1280px] mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="flex flex-col items-center md:items-start gap-4">
-              <div className="flex items-center gap-2 text-primary">
-                <svg className="size-6" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
-                </svg>
-                <span className="text-[#111318] text-xl font-bold tracking-tight">AutoBI Studio</span>
-              </div>
-              <p className="text-gray-400 text-sm max-w-[320px] text-center md:text-left leading-relaxed">
-                Modernizing enterprise analytics for the next generation of data teams.
-              </p>
-            </div>
 
-            <div className="flex flex-col items-center md:items-end gap-6 text-center md:text-right">
-              <div className="flex items-center gap-8 font-bold text-[10px] uppercase tracking-[0.2em] text-gray-400">
-                <a className="hover:text-primary transition-colors" href="#">Privacy</a>
-                <a className="hover:text-primary transition-colors" href="#">Terms</a>
-                <a className="hover:text-primary transition-colors" href="#">Status</a>
-              </div>
-              <p className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em]">
-                © 2024 AutoBI Studio Inc. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

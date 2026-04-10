@@ -9,6 +9,7 @@ function LoginForm({ onNavigate }) {
   const { login, loginWithFirebase } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,6 +19,7 @@ function LoginForm({ onNavigate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       // 1. Sign in with Firebase explicitly first
@@ -56,12 +58,15 @@ function LoginForm({ onNavigate }) {
         errorMsg = err.message;
       }
       setError(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     try {
         setError('');
+        setIsLoading(true);
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
         const idToken = await result.user.getIdToken();
@@ -80,11 +85,19 @@ function LoginForm({ onNavigate }) {
         }
         console.error('Google sign-in error:', err);
         setError(err.message || 'Failed to sign in with Google');
+    } finally {
+        setIsLoading(false);
     }
   };
 
   return (
     <div className="h-screen flex flex-col">
+      {isLoading && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
+          <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+          <p className="mt-4 text-[12px] font-bold text-gray-500 uppercase tracking-widest animate-pulse">Authenticating</p>
+        </div>
+      )}
       {/* Top right - Create account link */}
       <div className="flex justify-end px-8 lg:px-12 py-4">
         <div className="flex items-center gap-2">

@@ -128,7 +128,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, loading, login, loginWithFirebase, register, sendOtp, verifyOtp,
+      user, setUser, loading, login, loginWithFirebase, register, sendOtp, verifyOtp,
       resetPasswordOtp, verifyResetPassword, logout, isAdmin
     }}>
       {!loading && children}

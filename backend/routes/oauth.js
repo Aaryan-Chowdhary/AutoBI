@@ -2,8 +2,183 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { query } from '../db.js';
 import admin from '../firebaseAdmin.js';
+import { authenticateToken } from '../middleware/auth.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import bcrypt from 'bcrypt';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
+
+// Utilities and Configurations
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD
+  }
+});
+
+// In-memory store for OTPs: { email: { otp: string, expiresAt: number, type?: string } }
+const otpStore = new Map();
+
+// Multer Storage Configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = './uploads';
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only images are allowed'));
+  }
+});
+
+/**
+ * Get current user profile (Session Restoration)
+ */
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, name, email, photo_url as "photoURL", bio, 
+       notif_email as "notifEmail", notif_data_alerts as "notifDataAlerts", 
+       notif_report_schedule as "notifReportSchedule", theme, language 
+       FROM users WHERE id = $1`, 
+      [req.user.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
+/**
+ * Update Profile (Name and Bio)
+ */
+router.put('/profile', authenticateToken, async (req, res) => {
+  const { name, bio } = req.body;
+  try {
+    const result = await query(
+      'UPDATE users SET name = COALESCE($1, name), bio = COALESCE($2, bio) WHERE id = $3 RETURNING id, name, email, bio',
+      [name, bio, req.user.id]
+    );
+    res.json({ success: true, user: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+/**
+ * Update Settings (Notifications, Theme, Language)
+ */
+router.put('/settings', authenticateToken, async (req, res) => {
+  const { notifEmail, notifDataAlerts, notifReportSchedule, theme, language } = req.body;
+  try {
+    const result = await query(
+      `UPDATE users SET 
+        notif_email = COALESCE($1, notif_email), 
+        notif_data_alerts = COALESCE($2, notif_data_alerts), 
+        notif_report_schedule = COALESCE($3, notif_report_schedule),
+        theme = COALESCE($4, theme),
+        language = COALESCE($5, language)
+      WHERE id = $6 RETURNING id, theme, language`,
+      [notifEmail, notifDataAlerts, notifReportSchedule, theme, language, req.user.id]
+    );
+    res.json({ success: true, settings: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+/**
+ * Profile Picture Upload
+ */
+router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  
+  const photoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  
+  try {
+    await query('UPDATE users SET photo_url = $1 WHERE id = $2', [photoUrl, req.user.id]);
+    res.json({ success: true, photoURL: photoUrl });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update avatar in database' });
+  }
+});
+
+/**
+ * Send OTP for Password Change
+ */
+router.post('/change-password-send-otp', authenticateToken, async (req, res) => {
+  try {
+    const userRes = await query('SELECT email, name FROM users WHERE id = $1', [req.user.id]);
+    const { email, name } = userRes.rows[0];
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000;
+    otpStore.set(email, { otp, expiresAt, type: 'CHANGE_PASSWORD' });
+
+    await transporter.sendMail({
+      from: `"AutoBI Studio" <${process.env.SMTP_EMAIL}>`,
+      to: email,
+      subject: 'Verification Code for Password Change',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2 style="color: #111318;">Change Password Verification</h2>
+          <p style="color: #666;">Hi ${name}, please use the code below to verify your password change request:</p>
+          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <h1 style="font-size: 36px; letter-spacing: 8px; color: #1a56db; margin: 0;">${otp}</h1>
+          </div>
+          <p style="color: #666; font-size: 14px;">This code will expire in 10 minutes.</p>
+        </div>
+      `
+    });
+    res.json({ success: true, message: 'Verification code sent to your email.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to send verification code' });
+  }
+});
+
+/**
+ * Verify OTP and Finalize Password Change
+ */
+router.post('/change-password-verify', authenticateToken, async (req, res) => {
+  const { otp, newPassword } = req.body;
+  
+  try {
+    const userRes = await query('SELECT email FROM users WHERE id = $1', [req.user.id]);
+    const email = userRes.rows[0].email;
+    const record = otpStore.get(email);
+
+    if (!record || record.otp !== otp || record.type !== 'CHANGE_PASSWORD' || Date.now() > record.expiresAt) {
+      return res.status(400).json({ error: 'Invalid or expired verification code' });
+    }
+
+    // Update bit in Firebase if using Firebase (assuming uid is stored or needed)
+    // For simplicity with standard users, we just update PostgreSQL password_hash
+    const hash = await bcrypt.hash(newPassword, 10);
+    await query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, req.user.id]);
+    
+    otpStore.delete(email);
+    res.json({ success: true, message: 'Password updated successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update password' });
+  }
+});
 
 /**
  * Verify Firebase ID Token and handle User Session
@@ -24,7 +199,7 @@ router.post('/firebase', async (req, res) => {
         return res.status(403).json({ error: 'Email has not been verified yet. Please check your inbox.' });
     }
 
-    const { email, name, uid } = decodedToken;
+    const { email, name, uid, picture } = decodedToken;
     const displayName = name || email.split('@')[0];
 
     // Check if user exists in PostgreSQL
@@ -32,17 +207,25 @@ router.post('/firebase', async (req, res) => {
     let user;
 
     if (result.rows.length === 0) {
-      // Create new user 
+      // Create new user with photo
       result = await query(
-        'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
-        [displayName, email, `FIREBASE_${uid}`]
+        'INSERT INTO users (name, email, password_hash, photo_url) VALUES ($1, $2, $3, $4) RETURNING id, name, email, photo_url as "photoURL"',
+        [displayName, email, `FIREBASE_${uid}`, picture]
       );
     } else {
-        // If user logged in previously with standard password, but now uses Google/Firebase
-        // ensure their password_hash reflects the Firebase migration if empty or old format
-        if(!result.rows[0].password_hash.startsWith('FIREBASE_')) {
-             await query('UPDATE users SET password_hash = $1 WHERE email = $2', [`FIREBASE_${uid}`, email]);
-        }
+        // Update name/photo if they've changed and migration if needed
+        await query(
+          'UPDATE users SET password_hash = CASE WHEN password_hash NOT LIKE $1 THEN $1 ELSE password_hash END, photo_url = COALESCE(photo_url, $2) WHERE email = $3',
+          [`FIREBASE_${uid}`, picture, email]
+        );
+        // Refetch to get updated data
+        result = await query(
+          `SELECT id, name, email, photo_url as "photoURL", bio, 
+           notif_email as "notifEmail", notif_data_alerts as "notifDataAlerts", 
+           notif_report_schedule as "notifReportSchedule", theme, language 
+           FROM users WHERE email = $1`, 
+          [email]
+        );
     }
 
     user = result.rows[0];
@@ -56,7 +239,14 @@ router.post('/firebase', async (req, res) => {
         user: {
             id: user.id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            photoURL: user.photoURL,
+            bio: user.bio,
+            notifEmail: user.notifEmail,
+            notifDataAlerts: user.notifDataAlerts,
+            notifReportSchedule: user.notifReportSchedule,
+            theme: user.theme,
+            language: user.language
         }
     });
 
@@ -66,18 +256,7 @@ router.post('/firebase', async (req, res) => {
   }
 });
 
-import nodemailer from 'nodemailer';
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD
-  }
-});
-
-// In-memory store for OTPs: { email: { otp: string, expiresAt: number } }
-const otpStore = new Map();
+// Endpoints for sending and verifying OTPs
 
 router.post('/send-otp', async (req, res) => {
   const { email, name } = req.body;
