@@ -15,9 +15,10 @@ async function setupSchema() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        firebase_uid TEXT UNIQUE NOT NULL,
+        firebase_uid TEXT UNIQUE,
         name TEXT,
         email TEXT UNIQUE NOT NULL,
+        password_hash TEXT,
         photo_url TEXT,
         bio TEXT,
         role TEXT DEFAULT 'user',
