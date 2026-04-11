@@ -72,7 +72,7 @@ function RegisterForm({ onNavigate }) {
     try {
         setError('');
         const result = await signInWithPopup(auth, googleProvider);
-        const idToken = await result.user.getIdToken();
+        const idToken = await result.user.getIdToken(true); // force refresh
         
         const backendResult = await loginWithFirebase(idToken);
         if (backendResult.success) {

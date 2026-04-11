@@ -69,7 +69,7 @@ function LoginForm({ onNavigate }) {
         setIsLoading(true);
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
-        const idToken = await result.user.getIdToken();
+        const idToken = await result.user.getIdToken(true); // force refresh
 
         const res = await loginWithFirebase(idToken);
         if (res.success) {
