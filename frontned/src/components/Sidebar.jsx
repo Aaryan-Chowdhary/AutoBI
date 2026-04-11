@@ -17,7 +17,7 @@ const bottomItems = [
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const sidebarRef = useRef(null);
@@ -72,7 +72,7 @@ function Sidebar() {
         
         <div className={`min-w-0 flex-1 overflow-hidden transition-all duration-300 ${isExpanded ? 'opacity-100 max-w-[160px] ml-3' : 'opacity-0 max-w-0 ml-0'}`}>
           <span className="text-[#111318] text-[15px] font-bold tracking-tight block whitespace-nowrap">AutoBI Studio</span>
-          <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">PRO PLAN</span>
+          <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">{isAdmin ? 'PRO PLAN' : 'BASIC PLAN'}</span>
         </div>
       </div>
 

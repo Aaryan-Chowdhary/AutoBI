@@ -65,7 +65,6 @@ const thumbnailMap = {
 function HomePage() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [showTips, setShowTips] = useState(true);
   const [pinnedDashboards, setPinnedDashboards] = useState(
     recentDashboards.filter((d) => d.pinned).map((d) => d.id)
   );
@@ -97,7 +96,7 @@ function HomePage() {
             {[
               { label: 'Total Dashboards', value: isAdmin ? '12' : '0', icon: 'dashboard', color: 'from-blue-500 to-blue-600' },
               { label: 'Active Reports', value: isAdmin ? '4' : '0', icon: 'bar_chart', color: 'from-emerald-500 to-emerald-600' },
-              { label: 'Team Members', value: isAdmin ? '8' : '1', icon: 'group', color: 'from-violet-500 to-violet-600' },
+              { label: 'Plan', value: isAdmin ? 'Pro Plan' : 'Basic Plan', icon: 'workspace_premium', color: 'from-violet-500 to-violet-600' },
               { label: 'Last Updated', value: isAdmin ? '2h ago' : 'Never', icon: 'schedule', color: 'from-amber-500 to-orange-500' },
             ].map((stat) => (
               <div
@@ -115,29 +114,6 @@ function HomePage() {
             ))}
           </div>
 
-          {showTips && (
-            <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 mb-8 relative">
-              <button
-                onClick={() => setShowTips(false)}
-                className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/60 transition-colors"
-              >
-                <span className="material-symbols-outlined text-gray-400 text-lg">close</span>
-              </button>
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-primary">lightbulb</span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-800 mb-1">Quick Start Tips</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">
-                    Use the Studio to drag-and-drop visualizations onto your canvas and build custom dashboards.
-                    Click "Open Studio" on any dashboard to start editing.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Create New */}
           <h2 className="text-xl font-bold text-[#111318] mb-5">Create New</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
@@ -151,7 +127,7 @@ function HomePage() {
                 <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200/50 mb-5">
                   <span className="material-symbols-outlined text-white text-2xl">add_to_drive</span>
                 </div>
-                <h3 className="text-base font-bold text-[#111318] mb-2">New Blank Dashboard</h3>
+                <h3 className="text-base font-bold text-[#111318] mb-2">Create with Raw Data</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-5">
                   Open the Studio and start from scratch. Drag and drop charts, KPIs, and tables onto a blank canvas.
                 </p>
@@ -167,7 +143,7 @@ function HomePage() {
                 <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg shadow-violet-200/50 mb-5">
                   <span className="material-symbols-outlined text-white text-2xl">cloud_upload</span>
                 </div>
-                <h3 className="text-base font-bold text-[#111318] mb-2">Upload Data (Coming Soon)</h3>
+                <h3 className="text-base font-bold text-[#111318] mb-2">Create with Clean Data</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-5">
                   Upload a CSV or Excel file and auto-generate a dashboard from your data.
                 </p>

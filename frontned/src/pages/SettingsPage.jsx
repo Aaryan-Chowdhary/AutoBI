@@ -7,7 +7,7 @@ import { api } from '../lib/api';
 
 const settingTabs = [
   { id: 'profile', label: 'profile_settings', icon: 'person' },
-  { id: 'notifications', label: 'notification_settings', icon: 'notifications' },
+  { id: 'plan', label: 'plan_settings', icon: 'workspace_premium' },
   { id: 'security', label: 'security_settings', icon: 'shield' },
   { id: 'appearance', label: 'appearance_settings', icon: 'palette' },
   { id: 'language', label: 'language_settings', icon: 'language' },
@@ -15,7 +15,7 @@ const settingTabs = [
 ];
 
 function SettingsPage() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, isAdmin } = useAuth();
   const { t, language: currentLang, setLanguage: setGlobalLang } = useTranslation();
   const [activeTab, setActiveTab] = useState('profile');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -37,12 +37,6 @@ function SettingsPage() {
     lastName: '',
     email: '',
     bio: '',
-  });
-
-  const [notifications, setNotifications] = useState({
-    email: true,
-    dataAlerts: true,
-    reportSchedule: false,
   });
 
   const [security, setSecurity] = useState({
@@ -69,12 +63,6 @@ function SettingsPage() {
         bio: user.bio || '',
       }));
 
-      setNotifications({
-        email: user.notifEmail ?? true,
-        dataAlerts: user.notifDataAlerts ?? true,
-        reportSchedule: user.notifReportSchedule ?? false,
-      });
-
       setAppearance(user.theme || 'light');
       setLanguage(user.language || 'English');
     }
@@ -83,10 +71,6 @@ function SettingsPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const toggleNotification = (key) => {
-    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleSaveProfile = async () => {
@@ -109,9 +93,6 @@ function SettingsPage() {
 
   const handleSaveSettings = async (overrides = {}) => {
     const freshSettings = {
-      notifEmail: notifications.email,
-      notifDataAlerts: notifications.dataAlerts,
-      notifReportSchedule: notifications.reportSchedule,
       theme: appearance,
       language: language,
       ...overrides
@@ -299,41 +280,79 @@ function SettingsPage() {
     </div>
   );
 
-  const renderNotifications = () => (
+  const renderPlan = () => (
     <div className="space-y-8">
       <div>
-        <h3 className="text-[18px] font-bold text-[#111318] mb-1">{t('notification_settings')}</h3>
-        <p className="text-gray-500 text-[14px]">Choose how you want to stay updated with your data and workspace.</p>
+        <h3 className="text-[18px] font-bold text-[#111318] mb-1">{t('plan_settings')}</h3>
+        <p className="text-gray-500 text-[14px]">Manage your AutoBI subscription and features.</p>
       </div>
 
-      <div className="space-y-6">
-        {[
-          { id: 'email', label: 'Email Notifications', desc: 'Receive daily digests and critical alerts via email.' },
-          { id: 'dataAlerts', label: 'Dataset Processing Alerts', desc: 'Get notified when your data sources finish refreshing.' },
-          { id: 'reportSchedule', label: 'Scheduled Report Notifications', desc: 'Alerts when your periodic PDF/Excel reports are ready.' },
-        ].map(item => (
-          <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 hover:bg-gray-50/50 transition-colors">
-            <div className="space-y-0.5">
-              <h4 className="font-bold text-[#111318] text-[15px]">{item.label}</h4>
-              <p className="text-[13px] text-gray-400">{item.desc}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Basic Plan */}
+        <div className={`p-6 rounded-[24px] border-2 transition-all relative ${!isAdmin ? 'border-primary bg-primary/5' : 'border-gray-100 bg-white'}`}>
+          {!isAdmin && (
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[12px] font-bold px-3 py-1 rounded-full tracking-wider uppercase whitespace-nowrap">
+              Current Plan
             </div>
-            <button 
-              onClick={() => toggleNotification(item.id)}
-              className={`w-12 h-6 rounded-full relative transition-all duration-300 ${notifications[item.id] ? 'bg-primary' : 'bg-gray-200'}`}
-            >
-              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${notifications[item.id] ? 'left-7' : 'left-1'}`} />
-            </button>
+          )}
+          <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4 text-gray-500">
+            <span className="material-symbols-outlined">person</span>
           </div>
-        ))}
-      </div>
+          <h4 className="font-bold text-[20px] text-[#111318] mb-2">Basic Plan</h4>
+          <p className="text-[13px] text-gray-400 mb-6">Essential tools for personal use.</p>
+          <div className="space-y-3 mb-8">
+            <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
+              <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
+              Raw Data Upload
+            </div>
+            <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
+              <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
+              Standard Visualizations
+            </div>
+          </div>
+          {!isAdmin ? (
+             <button className="w-full py-3 bg-white border border-gray-200 text-gray-400 font-bold rounded-xl cursor-default text-[14px]">
+               Active
+             </button>
+          ) : (
+             <button className="w-full py-3 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all text-[14px]">
+               Downgrade
+             </button>
+          )}
+        </div>
 
-      <div className="flex justify-end pt-4">
-        <button 
-          onClick={() => handleSaveSettings()}
-          className="px-8 py-2.5 bg-primary text-white text-[14px] font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-primary/20 transition-all"
-        >
-          {t('save_changes')}
-        </button>
+        {/* Pro Plan */}
+        <div className={`p-6 rounded-[24px] border-2 transition-all relative ${isAdmin ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' : 'border-gray-100 bg-white'}`}>
+          {isAdmin && (
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[12px] font-bold px-3 py-1 rounded-full tracking-wider uppercase whitespace-nowrap">
+              Current Plan
+            </div>
+          )}
+          <div className="w-12 h-12 bg-linear-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center mb-4 text-white shadow-lg shadow-violet-200">
+            <span className="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <h4 className="font-bold text-[20px] text-[#111318] mb-2">Pro Plan</h4>
+          <p className="text-[13px] text-gray-400 mb-6">Advanced features for power users.</p>
+          <div className="space-y-3 mb-8">
+            <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
+              <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
+              Clean Data Features <span className="text-[10px] bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full ml-1 font-bold">SOON</span>
+            </div>
+            <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
+              <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
+              Unlimited Dashboards
+            </div>
+          </div>
+          {isAdmin ? (
+             <button className="w-full py-3 bg-white border border-gray-200 text-gray-400 font-bold rounded-xl cursor-default text-[14px]">
+               Active
+             </button>
+          ) : (
+             <button onClick={() => showToast('Redirecting to payment gateway...')} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 text-[14px]">
+               Upgrade to Pro
+             </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -520,7 +539,7 @@ function SettingsPage() {
   const renderContent = () => {
     switch (activeTab) {
       case 'profile': return renderProfile();
-      case 'notifications': return renderNotifications();
+      case 'plan': return renderPlan();
       case 'security': return renderSecurity();
       case 'appearance': return renderAppearance();
       case 'language': return renderLanguage();
@@ -562,7 +581,7 @@ function SettingsPage() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[14px] font-bold transition-all mb-1 last:mb-0
+                      w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[13px] font-semibold transition-all mb-1 last:mb-0
                       ${activeTab === tab.id
                         ? 'bg-primary/10 text-primary shadow-[0_8px_16px_rgba(33,101,243,0.08)]'
                         : tab.isDanger 

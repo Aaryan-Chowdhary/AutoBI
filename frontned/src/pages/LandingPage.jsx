@@ -317,22 +317,22 @@ function LandingPage() {
                 <ul className="space-y-4 mb-8 flex-1">
                   <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                     <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    1 Data Connector
+                    Clean Raw Data  
                   </li>
                   <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                     <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    5 Reports / Month
+                    Limited Insights & Reports 
                   </li>
                   <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                     <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    Community Support
+                    Limited Storage
                   </li>
                 </ul>
                 <button 
                   onClick={handleGetStarted}
                   className="w-full py-4 rounded-xl border-2 border-gray-100 text-gray-600 font-bold hover:bg-gray-50 transition-colors"
                 >
-                  Get Started
+                  Your Plan
                 </button>
               </div>
 
@@ -351,26 +351,26 @@ function LandingPage() {
                 <ul className="space-y-4 mb-8 flex-1">
                   <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                     <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    Unlimited Connectors
+                    Unlimited Data Cleaning
                   </li>
                   <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                     <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    Unlimited Reports
+                    Unlimited Storage
                   </li>
                   <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                     <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    AI-Powered Insights
+                    Powerful Insights & Reports
                   </li>
                   <li className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                     <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                    Priority Support
+                    Access To Premium Features
                   </li>
                 </ul>
                 <button 
                   onClick={handleGetStarted}
                   className="w-full py-4 rounded-xl bg-primary text-white font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-primary/20"
                 >
-                  Try Pro Free
+                  Buy Now
                 </button>
               </div>
 
