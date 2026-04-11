@@ -7,6 +7,9 @@ const { Pool } = pg;
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // Required for Neon DB / hosted PostgreSQL
+  },
 });
 
 pool.on('error', (err) => {
@@ -15,3 +18,4 @@ pool.on('error', (err) => {
 });
 
 export const query = (text, params) => pool.query(text, params);
+
