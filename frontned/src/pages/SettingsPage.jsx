@@ -357,23 +357,11 @@ function SettingsPage() {
     </div>
   );
 
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const renderSecurity = () => (
     <div className="space-y-10">
-      <div className="space-y-6">
-        <h3 className="text-[18px] font-bold text-[#111318]">{t('security_settings')}</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 bg-gray-50/30">
-            <div className="space-y-0.5">
-              <h4 className="font-bold text-[#111318]/40 text-[15px]">Two-Factor Authentication (Disabled)</h4>
-              <p className="text-[13px] text-gray-300">This feature has been removed by system policy.</p>
-            </div>
-            <div className="w-12 h-6 rounded-full bg-gray-100 flex items-center px-1">
-              <div className="w-4 h-4 bg-gray-200 rounded-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="space-y-6">
         <h3 className="text-[18px] font-bold text-[#111318]">Change Password</h3>
         <div className="space-y-4 max-w-md">
@@ -381,24 +369,42 @@ function SettingsPage() {
             <label className="text-[12px] font-semibold text-gray-400 ml-1">New Password</label>
             <div className="relative">
               <input 
-                type="password" 
+                type={showNewPassword ? "text" : "password"} 
                 placeholder="••••••••" 
                 value={security.newPassword}
                 onChange={(e) => setSecurity(prev => ({ ...prev, newPassword: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[14px] focus:outline-none focus:bg-white focus:border-primary/30 transition-all font-medium" 
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[14px] focus:outline-none focus:bg-white focus:border-primary/30 transition-all font-medium pr-10" 
               />
+              <button 
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {showNewPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
             </div>
           </div>
           <div className="space-y-1.5">
             <label className="text-[12px] font-semibold text-gray-400 ml-1">Confirm New Password</label>
             <div className="relative">
               <input 
-                type="password" 
+                type={showConfirmPassword ? "text" : "password"} 
                 placeholder="••••••••" 
                 value={security.confirmPassword}
                 onChange={(e) => setSecurity(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[14px] focus:outline-none focus:bg-white focus:border-primary/30 transition-all font-medium" 
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-[14px] focus:outline-none focus:bg-white focus:border-primary/30 transition-all font-medium pr-10" 
               />
+              <button 
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
             </div>
           </div>
         </div>

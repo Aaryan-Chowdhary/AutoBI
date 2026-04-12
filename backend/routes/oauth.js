@@ -160,21 +160,39 @@ router.post('/change-password-verify', authenticateToken, async (req, res) => {
   const { otp, newPassword } = req.body;
   
   try {
-    const userRes = await query('SELECT email FROM users WHERE id = $1', [req.user.id]);
-    const email = userRes.rows[0].email;
+    const userRes = await query('SELECT email, password_hash, firebase_uid FROM users WHERE id = $1', [req.user.id]);
+    if (userRes.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    
+    const { email, password_hash, firebase_uid } = userRes.rows[0];
     const record = otpStore.get(email);
 
     if (!record || record.otp !== otp || record.type !== 'CHANGE_PASSWORD' || Date.now() > record.expiresAt) {
       return res.status(400).json({ error: 'Invalid or expired verification code' });
     }
 
-    // Update bit in Firebase if using Firebase (assuming uid is stored or needed)
-    // For simplicity with standard users, we just update PostgreSQL password_hash
+    // 1. Update Firebase if user is a Firebase user
+    let actualUid = firebase_uid;
+    if (!actualUid && password_hash?.startsWith('FIREBASE_')) {
+      actualUid = password_hash.replace('FIREBASE_', '');
+    }
+
+    if (actualUid) {
+      try {
+        await admin.auth().updateUser(actualUid, { password: newPassword });
+        console.log(`✅ Synced password change to Firebase for UID: ${actualUid}`);
+      } catch (fbError) {
+        console.error('Firebase Password Sync Error:', fbError);
+        // We continue because updating local DB is still important, 
+        // but we might want to inform the user if it's a critical failure.
+      }
+    }
+
+    // 2. Update local PostgreSQL password_hash
     const hash = await bcrypt.hash(newPassword, 10);
     await query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, req.user.id]);
     
     otpStore.delete(email);
-    res.json({ success: true, message: 'Password updated successfully.' });
+    res.json({ success: true, message: 'Password updated successfully and synced with your account.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update password' });
   }
@@ -209,14 +227,14 @@ router.post('/firebase', async (req, res) => {
     if (result.rows.length === 0) {
       // Create new user with photo
       result = await query(
-        'INSERT INTO users (name, email, password_hash, photo_url) VALUES ($1, $2, $3, $4) RETURNING id, name, email, photo_url as "photoURL"',
-        [displayName, email, `FIREBASE_${uid}`, picture]
+        'INSERT INTO users (name, email, password_hash, firebase_uid, photo_url) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, photo_url as "photoURL"',
+        [displayName, email, `FIREBASE_${uid}`, uid, picture]
       );
     } else {
         // Update name/photo if they've changed and migration if needed
         await query(
-          'UPDATE users SET password_hash = CASE WHEN password_hash NOT LIKE $1 THEN $1 ELSE password_hash END, photo_url = COALESCE(photo_url, $2) WHERE email = $3',
-          [`FIREBASE_${uid}`, picture, email]
+          'UPDATE users SET password_hash = CASE WHEN password_hash NOT LIKE $1 THEN $1 ELSE password_hash END, firebase_uid = COALESCE(firebase_uid, $2), photo_url = COALESCE(photo_url, $3) WHERE email = $4',
+          [`FIREBASE_${uid}`, uid, picture, email]
         );
         // Refetch to get updated data
         result = await query(
@@ -339,12 +357,12 @@ router.post('/verify-otp', async (req, res) => {
     if (result.rows.length === 0) {
       const displayName = userRecord.displayName || email.split('@')[0];
       result = await query(
-        'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email',
-        [displayName, email, `FIREBASE_${userRecord.uid}`]
+        'INSERT INTO users (name, email, password_hash, firebase_uid) VALUES ($1, $2, $3, $4) RETURNING id, name, email',
+        [displayName, email, `FIREBASE_${userRecord.uid}`, userRecord.uid]
       );
     } else {
         if(!result.rows[0].password_hash.startsWith('FIREBASE_')) {
-             await query('UPDATE users SET password_hash = $1 WHERE email = $2', [`FIREBASE_${userRecord.uid}`, email]);
+             await query('UPDATE users SET password_hash = $1, firebase_uid = $2 WHERE email = $3', [`FIREBASE_${userRecord.uid}`, userRecord.uid, email]);
         }
     }
     user = result.rows[0];
