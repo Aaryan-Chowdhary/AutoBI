@@ -25,12 +25,20 @@ export function DatasetProvider({ children }) {
   // ─── Fetch real datasets from API ─────────────────────────────
   const fetchDatasets = async () => {
     if (!user) {
+      console.warn('[DATASET_CONTEXT] No user found, skipping fetch.');
       setDatasets([]);
       return;
     }
     try {
+      console.log('[DATASET_CONTEXT] Fetching datasets...');
       const data = await api('/datasets');
+      console.log(`[DATASET_CONTEXT] Received ${data?.length} datasets from server:`, data);
       
+      if (!data || !Array.isArray(data)) {
+        console.warn('Received invalid data format for datasets:', data);
+        return;
+      }
+
       // format for frontend consumption
       const formatted = data.map(d => {
         let sizeStr = '—';
@@ -43,7 +51,7 @@ export function DatasetProvider({ children }) {
           id: d.id,
           name: d.name,
           status: d.status,
-          fileType: 'csv', // DuckDB Parquet engine primarily runs on CSV ingestion currently
+          fileType: d.name.split('.').pop().toLowerCase(),
           size: sizeStr,
           records: d.row_count ? d.row_count.toLocaleString() : '—',
           uploadType: d.status === 'needs_cleaning' ? 'raw' : 'cleaned',
@@ -53,6 +61,7 @@ export function DatasetProvider({ children }) {
           schema: d.schema ? JSON.parse(d.schema) : null,
         };
       });
+      console.log('[DATASET_CONTEXT] Formatted datasets:', formatted);
       setDatasets(formatted);
     } catch (err) {
       console.error('Failed to fetch datasets:', err);

@@ -27,11 +27,7 @@ function TopBar({ pageTitle = 'Workspace Home', onSearchChange }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const notifications = [
-    { id: 1, text: 'Dashboard "Q4 Sales" was shared with you', time: '2 min ago', unread: true },
-    { id: 2, text: 'Data cleaning completed for "marketing_data.csv"', time: '1 hour ago', unread: true },
-    { id: 3, text: 'Your plan renews in 5 days', time: '1 day ago', unread: false },
-  ];
+  const notifications = [];
 
   const unreadCount = notifications.filter((n) => n.unread).length;
 
@@ -68,11 +64,11 @@ function TopBar({ pageTitle = 'Workspace Home', onSearchChange }) {
             className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
           >
             <span className="material-symbols-outlined text-gray-500 text-xl">notifications</span>
-            {unreadCount > 0 && (
+            {/* {unreadCount > 0 && (
               <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center ring-2 ring-white">
                 {unreadCount}
               </span>
-            )}
+            )} */}
           </button>
 
           {/* Notification Dropdown */}
@@ -113,7 +109,7 @@ function TopBar({ pageTitle = 'Workspace Home', onSearchChange }) {
           >
             <div className="text-right hidden sm:block">
               <p className="text-sm font-semibold text-gray-800 leading-tight">{displayName}</p>
-              <p className="text-[11px] text-gray-400">{displayRole}</p>
+              {/* <p className="text-[11px] text-gray-400">{displayRole}</p> */}
             </div>
             <div className={`w-10 h-10 rounded-full bg-linear-to-br ${avatarColor} flex items-center justify-center text-white font-bold text-sm ring-2 ring-white shadow-md overflow-hidden shrink-0`}>
               {user?.photoURL ? (

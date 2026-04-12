@@ -67,25 +67,25 @@ function DatasetsPage() {
 
   // Dynamic Metrics Calculation
   const totalDatasets = datasets.length;
-  // Parse 'records' string to sum them up, handling commas
-  const totalRecordsCount = datasets.reduce((acc, curr) => {
-    let numStr = curr.records || '0';
-    if (typeof numStr === 'string') numStr = numStr.replace(/,/g, '');
-    const num = parseInt(numStr, 10);
-    return acc + (isNaN(num) ? 0 : num);
-  }, 0);
+  // Count of cleaned datasets
+  const cleanedDatasetsCount = datasets.filter(d => d.status === 'cleaned').length;
+  const rawDatasetsCount = datasets.filter(d => d.status === 'needs_cleaning').length;
   
-  let formattedRecords = '0';
-  if (totalRecordsCount > 0) {
-    if (totalRecordsCount >= 1000) {
-      formattedRecords = (totalRecordsCount / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-    } else {
-      formattedRecords = totalRecordsCount.toLocaleString();
-    }
-  }
+  const formattedCleanedCount = cleanedDatasetsCount.toString();
 
-  const aiInsights = totalDatasets === 0 ? '0' : (totalDatasets * 3 + 12).toString(); 
-  const lastUpdatedStat = datasets.length > 0 ? datasets[0].lastUpdated : 'Never';
+
+  // Current session timestamp formatted
+  const currentSessionTimestamp = new Date().toLocaleString('en-IN', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric', 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    hour12: true 
+  });
+
+  const aiInsights = '0'; 
+  const lastUpdatedStat = currentSessionTimestamp;
 
   return (
     <div className="h-screen flex bg-[#f8f9fb] overflow-hidden">
@@ -138,9 +138,9 @@ function DatasetsPage() {
                 <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
                   <span className="material-symbols-outlined text-[18px]">cleaning_services</span>
                 </div>
-                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Cleaned Records</p>
+                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Cleaned Datasets</p>
               </div>
-              <h3 className="text-[28px] font-bold text-[#111318] leading-none pl-1">{formattedRecords}</h3>
+              <h3 className="text-[28px] font-bold text-[#111318] leading-none pl-1">{formattedCleanedCount}</h3>
             </div>
             
             <div className="bg-white p-5 rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center gap-4 h-[110px] border border-white">
@@ -198,7 +198,7 @@ function DatasetsPage() {
                         <div className="min-w-0">
                           <p className="text-[13px] font-bold text-[#111318] truncate">{dataset.name}</p>
                           <p className="text-[11px] text-gray-400 font-medium tracking-tight mt-0.5">
-                            {(dataset.size || '12.4 MB')} • {dataset.columns || '45'} columns
+                            {(dataset.size || '12.4 MB')} • {dataset.records || '—'} records
                           </p>
                         </div>
                       </div>

@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import oauthRoutes from './routes/oauth.js';
 import dashboardsRoutes from './routes/dashboards.js';
+import uploadRoutes from './routes/upload.js';
+import datasetRoutes from './routes/datasets.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -37,6 +39,8 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', oauthRoutes);
 app.use('/api/dashboards', dashboardsRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/datasets', datasetRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

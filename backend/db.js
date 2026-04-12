@@ -14,7 +14,7 @@ export const pool = new Pool({
 
 pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+  // process.exit(-1); // DO NOT EXIT. Neon drops idle connections automatically. The pool will gracefully create a new one.
 });
 
 export const query = (text, params) => pool.query(text, params);

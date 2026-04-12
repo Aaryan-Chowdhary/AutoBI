@@ -12,6 +12,7 @@ import HomePage from './pages/HomePage';
 import DatasetsPage from './pages/DatasetsPage';
 import StudioPage from './pages/StudioPage';
 import SettingsPage from './pages/SettingsPage';
+import UploadPage from './pages/UploadPage';
 import PageLoader from './components/PageLoader';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
             </AuthLayout>
           } />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/upload" element={<UploadPage />} />
           <Route path="/datasets" element={<DatasetsPage />} />
           <Route path="/studio" element={<StudioPage />} />
           <Route path="/studio/:dashboardId" element={<StudioPage />} />

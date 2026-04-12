@@ -13,8 +13,9 @@ router.get('/', authenticateToken, async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
-    console.error('Fetch dashboards error:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboards' });
+    console.warn('Database unreachable, returning empty dashboards list:', error.message);
+    // Return empty array instead of 500 to prevent frontend crash during network/DNS issues
+    res.json([]);
   }
 });
 

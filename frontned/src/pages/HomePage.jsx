@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import { useAuth } from '../context/AuthContext';
+import { useDatasets } from '../context/DatasetContext';
+import { api } from '../lib/api';
 
 // Mock dashboard cards for UI demonstration
 const recentDashboards = [
@@ -64,13 +66,39 @@ const thumbnailMap = {
 
 function HomePage() {
   const { user, isAdmin } = useAuth();
+  const { datasets } = useDatasets();
   const navigate = useNavigate();
-  const [pinnedDashboards, setPinnedDashboards] = useState(
-    recentDashboards.filter((d) => d.pinned).map((d) => d.id)
-  );
-  const [openMenuId, setOpenMenuId] = useState(null);
+  const [dbDashboards, setDbDashboards] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const dashboards = isAdmin ? recentDashboards : [];
+  // Current session timestamp formatted
+  const currentSessionTimestamp = new Date().toLocaleString('en-IN', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric', 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    hour12: true 
+  });
+
+  React.useEffect(() => {
+    const fetchDashboards = async () => {
+      try {
+        const data = await api('/dashboards');
+        if (Array.isArray(data)) setDbDashboards(data);
+      } catch (err) {
+        console.error('Error fetching dashboards:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboards();
+  }, []);
+
+  const [pinnedDashboards, setPinnedDashboards] = React.useState([]);
+  const [openMenuId, setOpenMenuId] = React.useState(null);
+
+  const dashboards = dbDashboards;
 
   const togglePin = (id) => {
     setPinnedDashboards((prev) =>
@@ -94,10 +122,10 @@ function HomePage() {
           {/* Quick Stats Bar */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
-              { label: 'Total Dashboards', value: isAdmin ? '12' : '0', icon: 'dashboard', color: 'from-blue-500 to-blue-600' },
-              { label: 'Active Reports', value: isAdmin ? '4' : '0', icon: 'bar_chart', color: 'from-emerald-500 to-emerald-600' },
+              { label: 'Total Dashboards', value: dbDashboards.length.toString(), icon: 'dashboard', color: 'from-blue-500 to-blue-600' },
+              { label: 'Available Datasets', value: datasets.length.toString(), icon: 'database', color: 'from-emerald-500 to-emerald-600' },
               { label: 'Plan', value: isAdmin ? 'Pro Plan' : 'Basic Plan', icon: 'workspace_premium', color: 'from-violet-500 to-violet-600' },
-              { label: 'Last Updated', value: isAdmin ? '2h ago' : 'Never', icon: 'schedule', color: 'from-amber-500 to-orange-500' },
+              { label: 'Last Updated', value: currentSessionTimestamp, icon: 'schedule', color: 'from-amber-500 to-orange-500' },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -118,7 +146,7 @@ function HomePage() {
           <h2 className="text-xl font-bold text-[#111318] mb-5">Create New</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
             <div
-              onClick={() => handleOpenStudio('new')}
+              onClick={() => navigate('/upload')}
               className="group bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden"
             >
               <div className="absolute -right-6 -bottom-6 w-28 h-28 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -129,27 +157,30 @@ function HomePage() {
                 </div>
                 <h3 className="text-base font-bold text-[#111318] mb-2">Create with Raw Data</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-5">
-                  Open the Studio and start from scratch. Drag and drop charts, KPIs, and tables onto a blank canvas.
+                  Automagically clean your raw CSV or Excel data using our Pandas AI engine.
                 </p>
                 <span className="text-primary text-sm font-semibold inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Open Studio
+                  Upload File
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </span>
               </div>
             </div>
 
-            <div className="group bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-violet-300/50 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden opacity-60">
+            <div 
+              onClick={() => handleOpenStudio('new')}
+              className="group bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-violet-300/50 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden"
+            >
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg shadow-violet-200/50 mb-5">
-                  <span className="material-symbols-outlined text-white text-2xl">cloud_upload</span>
+                  <span className="material-symbols-outlined text-white text-2xl">dashboard_customize</span>
                 </div>
-                <h3 className="text-base font-bold text-[#111318] mb-2">Create with Clean Data</h3>
+                <h3 className="text-base font-bold text-[#111318] mb-2">Start from Scratch</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-5">
-                  Upload a CSV or Excel file and auto-generate a dashboard from your data.
+                  Open the Studio and start from scratch. Drag and drop charts, KPIs, and tables onto a blank canvas.
                 </p>
-                <span className="text-violet-500 text-sm font-semibold inline-flex items-center gap-1">
-                  Coming Soon
-                  <span className="material-symbols-outlined text-lg">lock</span>
+                <span className="text-violet-500 text-sm font-semibold inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Open Studio
+                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </span>
               </div>
             </div>
@@ -191,7 +222,7 @@ function HomePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                 {dashboards.map((dashboard) => {
-                  const ThumbComponent = thumbnailMap[dashboard.thumbnail];
+                  const ThumbComponent = thumbnailMap[dashboard.thumbnail] || thumbnailMap.bar;
                   return (
                     <DashboardCard
                       key={dashboard.id}
