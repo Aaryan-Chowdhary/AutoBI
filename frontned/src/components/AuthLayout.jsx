@@ -105,26 +105,27 @@ function AuthLayout({ children, isLogin }) {
                     <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-2">
                       <span className="material-symbols-outlined text-white text-lg">security</span>
                     </div>
-                    <h3 className="font-bold text-white text-sm mb-1">Secure & Scalable</h3>
-                    <p className="text-xs text-blue-100/80 leading-relaxed">Enterprise-ready security for teams of any size.</p>
+                    <h3 className="font-bold text-white text-sm mb-1">Secure Storage</h3>
+                    <p className="text-xs text-blue-100/80 leading-relaxed">Get The High Secure Storage To Store Datasets.</p>
                   </div>
                 </div>
-
+              {/*
                 <div className="mt-8 flex items-center gap-3 text-[9px] font-bold text-white/40 uppercase tracking-[0.15em]">
                   <span>Powered by Next-Gen AI</span>
                   <span className="w-6 h-px bg-white/30"></span>
                   <span>Trusted by 500+ Enterprises</span>
                 </div>
+              */}
               </div>
             </>
           ) : (
             <>
               <div className="relative z-10 max-w-md">
                 <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight mb-4">
-                  Connect every dot in your <span className="text-blue-200">business ecosystem.</span>
+                  Connect every dot in your <span className="text-blue-200">Datasets.</span>
                 </h2>
                 <p className="text-blue-100 text-sm leading-relaxed mb-6">
-                  Experience the first BI tool that thinks like an analyst. Join 5,000+ data-driven teams using AutoBI Studio.
+                  Experience the first BI tool that thinks like an analyst.
                 </p>
 
                 <div className="space-y-3">
@@ -150,6 +151,7 @@ function AuthLayout({ children, isLogin }) {
                       </div>
                     </div>
                   </div>
+                  {/*
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
@@ -161,15 +163,11 @@ function AuthLayout({ children, isLogin }) {
                       </div>
                     </div>
                   </div>
+                  */}
                 </div>
 
                 <div className="mt-6">
-                  <p className="text-[9px] font-bold text-white/50 uppercase tracking-[0.2em] mb-2">Trusted by Industry Leaders</p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-6 bg-white/20 rounded"></div>
-                    <div className="w-16 h-6 bg-white/20 rounded"></div>
-                    <div className="w-16 h-6 bg-white/20 rounded"></div>
-                  </div>
+                  <p className="text-[9px] font-bold text-white/50 uppercase tracking-[0.2em] mb-2">Trusted by Myself</p>
                 </div>
               </div>
             </>

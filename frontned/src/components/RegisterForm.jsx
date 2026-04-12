@@ -109,7 +109,7 @@ function RegisterForm({ onNavigate }) {
       {!showOtpModal ? (
         <>
           <h1 className="text-2xl font-bold text-[#111318] mb-0.5">Create your account</h1>
-          <p className="text-gray-500 text-sm mb-4">Start your 14-day free trial. No credit card required.</p>
+          <p className="text-gray-500 text-sm mb-4">Start your Analytics Journey Today.</p>
         </>
       ) : (
         <>
@@ -201,6 +201,7 @@ function RegisterForm({ onNavigate }) {
                     </div>
                 )}
 
+                {/* checkbox of terms and conditions 
                 <div className="flex items-start gap-2 pt-1">
                 <input
                     type="checkbox"
@@ -213,6 +214,7 @@ function RegisterForm({ onNavigate }) {
                     I agree to the <a href="#" className="text-primary hover:underline font-medium">Terms</a> and <a href="#" className="text-primary hover:underline font-medium">Privacy Policy</a>
                 </label>
                 </div>
+                */}
 
                 <button
                 type="submit"

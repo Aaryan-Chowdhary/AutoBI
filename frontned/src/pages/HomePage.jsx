@@ -170,16 +170,18 @@ function HomePage() {
               onClick={() => handleOpenStudio('new')}
               className="group bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-violet-300/50 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden"
             >
+              <div className="absolute -right-6 -bottom-6 w-28 h-28 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-blue-100 rounded-full opacity-0 group-hover:opacity-60 transition-opacity duration-500 delay-100" />
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg shadow-violet-200/50 mb-5">
                   <span className="material-symbols-outlined text-white text-2xl">dashboard_customize</span>
                 </div>
-                <h3 className="text-base font-bold text-[#111318] mb-2">Start from Scratch</h3>
+                <h3 className="text-base font-bold text-[#111318] mb-2">Create With Cleaned Data</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-5">
-                  Open the Studio and start from scratch. Drag and drop charts, KPIs, and tables onto a blank canvas.
+                  Create The Dashbaords Using Clean Datasets. Get insights, Drag and drop charts, KPIs, and tables onto a blank canvas.
                 </p>
                 <span className="text-violet-500 text-sm font-semibold inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Open Studio
+                  Get Started
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </span>
               </div>
