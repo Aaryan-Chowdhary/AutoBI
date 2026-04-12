@@ -51,7 +51,7 @@ const upload = multer({
 router.get('/me', authenticateToken, async (req, res) => {
   try {
     const result = await query(
-      `SELECT id, name, email, photo_url as "photoURL", bio, 
+      `SELECT id, name, email, photo_url as "photoURL", bio, plan,
        notif_email as "notifEmail", notif_data_alerts as "notifDataAlerts", 
        notif_report_schedule as "notifReportSchedule", theme, language 
        FROM users WHERE id = $1`, 
@@ -238,7 +238,7 @@ router.post('/firebase', async (req, res) => {
         );
         // Refetch to get updated data
         result = await query(
-          `SELECT id, name, email, photo_url as "photoURL", bio, 
+          `SELECT id, name, email, photo_url as "photoURL", bio, plan,
            notif_email as "notifEmail", notif_data_alerts as "notifDataAlerts", 
            notif_report_schedule as "notifReportSchedule", theme, language 
            FROM users WHERE email = $1`, 
@@ -259,6 +259,7 @@ router.post('/firebase', async (req, res) => {
             name: user.name,
             email: user.email,
             photoURL: user.photoURL,
+            plan: user.plan,
             bio: user.bio,
             notifEmail: user.notifEmail,
             notifDataAlerts: user.notifDataAlerts,

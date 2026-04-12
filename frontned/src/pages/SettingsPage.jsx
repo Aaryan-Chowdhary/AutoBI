@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import { useAuth } from '../context/AuthContext';
@@ -280,12 +280,105 @@ function SettingsPage() {
     </div>
   );
 
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+
+  const handleUpgradeToPro = async () => {
+    try {
+      setPaymentLoading(true);
+
+      // Step 1: Create an order on our backend
+      const orderData = await api('/payment/create-order', {
+        method: 'POST',
+      });
+
+      if (!orderData.success) {
+        throw new Error(orderData.error || 'Failed to create order');
+      }
+
+      // Step 2: Open Razorpay Checkout popup
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'AutoBI Studio',
+        description: 'Pro Plan — Monthly Subscription',
+        order_id: orderData.orderId,
+        handler: async function (response) {
+          try {
+            // Step 3: Verify payment on our backend
+            const verifyData = await api('/payment/verify', {
+              method: 'POST',
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            if (verifyData.success) {
+              // Update user context with new plan
+              setUser(prev => ({ ...prev, plan: 'pro' }));
+              setUpgradeSuccess(true);
+              showToast('🎉 Welcome to Pro! Your plan has been upgraded.');
+
+              // Reset success animation after 5 seconds
+              setTimeout(() => setUpgradeSuccess(false), 5000);
+            } else {
+              showToast(verifyData.error || 'Payment verification failed', 'error');
+            }
+          } catch (err) {
+            showToast(err.message || 'Payment verification failed', 'error');
+          } finally {
+            setPaymentLoading(false);
+          }
+        },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+        },
+        theme: {
+          color: '#2165F3',
+        },
+        modal: {
+          ondismiss: function () {
+            setPaymentLoading(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        showToast('Payment failed: ' + (response.error?.description || 'Unknown error'), 'error');
+        setPaymentLoading(false);
+      });
+      rzp.open();
+    } catch (error) {
+      console.error('Payment Error:', error);
+      showToast(error.message || 'Could not initiate payment', 'error');
+      setPaymentLoading(false);
+    }
+  };
+
   const renderPlan = () => (
     <div className="space-y-8">
       <div>
         <h3 className="text-[18px] font-bold text-[#111318] mb-1">{t('plan_settings')}</h3>
         <p className="text-gray-500 text-[14px]">Manage your AutoBI subscription and features.</p>
       </div>
+
+      {/* Upgrade Success Banner */}
+      {upgradeSuccess && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-6 flex items-center gap-4" style={{ animation: 'slideUp 0.4s ease-out' }}>
+          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-emerald-600 text-[28px]">celebration</span>
+          </div>
+          <div>
+            <h4 className="font-bold text-emerald-800 text-[16px]">Welcome to Pro! 🎉</h4>
+            <p className="text-emerald-600 text-[13px]">Your account has been upgraded. Enjoy unlimited dashboards and all premium features.</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic Plan */}
@@ -298,16 +391,23 @@ function SettingsPage() {
           <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4 text-gray-500">
             <span className="material-symbols-outlined">person</span>
           </div>
-          <h4 className="font-bold text-[20px] text-[#111318] mb-2">Basic Plan</h4>
+          <h4 className="font-bold text-[20px] text-[#111318] mb-1">Basic Plan</h4>
+          <div className="flex items-baseline gap-1 mb-3">
+            <span className="text-[28px] font-bold text-[#111318]">Free</span>
+          </div>
           <p className="text-[13px] text-gray-400 mb-6">Essential tools for personal use.</p>
           <div className="space-y-3 mb-8">
             <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
               <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
-              Raw Data Upload
+              Clean Raw Data
             </div>
             <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
               <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
-              Standard Visualizations
+              Limited Insights & Reports
+            </div>
+            <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
+              <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
+              Limited Storage
             </div>
           </div>
           {!isAdmin ? (
@@ -322,25 +422,42 @@ function SettingsPage() {
         </div>
 
         {/* Pro Plan */}
-        <div className={`p-6 rounded-[24px] border-2 transition-all relative ${isAdmin ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' : 'border-gray-100 bg-white'}`}>
+        <div className={`p-6 rounded-[24px] border-2 transition-all relative ${isAdmin ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' : 'border-gray-100 bg-white hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100'}`}>
           {isAdmin && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[12px] font-bold px-3 py-1 rounded-full tracking-wider uppercase whitespace-nowrap">
               Current Plan
             </div>
           )}
+          {!isAdmin && (
+            <div className="absolute -top-3 right-6 bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider uppercase whitespace-nowrap shadow-lg shadow-violet-200">
+              ✨ Recommended
+            </div>
+          )}
           <div className="w-12 h-12 bg-linear-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center mb-4 text-white shadow-lg shadow-violet-200">
             <span className="material-symbols-outlined">workspace_premium</span>
           </div>
-          <h4 className="font-bold text-[20px] text-[#111318] mb-2">Pro Plan</h4>
+          <h4 className="font-bold text-[20px] text-[#111318] mb-1">Pro Plan</h4>
+          <div className="flex items-baseline gap-1 mb-3">
+            <span className="text-[28px] font-bold text-[#111318]">₹99</span>
+            <span className="text-[14px] text-gray-400 font-medium">/month</span>
+          </div>
           <p className="text-[13px] text-gray-400 mb-6">Advanced features for power users.</p>
           <div className="space-y-3 mb-8">
             <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
               <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
-              Clean Data Features <span className="text-[10px] bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full ml-1 font-bold">SOON</span>
+              Unlimited Data Cleaning
             </div>
             <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
               <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
-              Unlimited Dashboards
+              Unlimited Storage
+            </div>
+            <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
+              <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
+              Powerful Insights & Reports
+            </div>
+            <div className="flex items-center gap-2 text-[14px] font-medium text-gray-600">
+              <span className="material-symbols-outlined text-[18px] text-emerald-500">check_circle</span>
+              Access To Premium Features
             </div>
           </div>
           {isAdmin ? (
@@ -348,8 +465,26 @@ function SettingsPage() {
                Active
              </button>
           ) : (
-             <button onClick={() => showToast('Redirecting to payment gateway...')} className="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 text-[14px]">
-               Upgrade to Pro
+             <button
+               id="upgrade-to-pro-btn"
+               onClick={handleUpgradeToPro}
+               disabled={paymentLoading}
+               className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg shadow-violet-500/25 text-[14px] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+             >
+               {paymentLoading ? (
+                 <>
+                   <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                   </svg>
+                   Processing...
+                 </>
+               ) : (
+                 <>
+                   <span className="material-symbols-outlined text-[18px]">bolt</span>
+                   Upgrade to Pro — ₹99/mo
+                 </>
+               )}
              </button>
           )}
         </div>

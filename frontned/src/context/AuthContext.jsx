@@ -123,13 +123,14 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  // Temporarily define isAdmin until real roles are implemented
-  const isAdmin = user?.email === 'admin@autobi.com';
+  // Plan-based access: user is Pro if their plan is 'pro' in the database
+  const isPro = user?.plan === 'pro';
+  const isAdmin = isPro; // Backward compatibility alias
 
   return (
     <AuthContext.Provider value={{
       user, setUser, loading, login, loginWithFirebase, register, sendOtp, verifyOtp,
-      resetPasswordOtp, verifyResetPassword, logout, isAdmin
+      resetPasswordOtp, verifyResetPassword, logout, isPro, isAdmin
     }}>
       {!loading && children}
     </AuthContext.Provider>

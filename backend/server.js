@@ -5,6 +5,7 @@ import oauthRoutes from './routes/oauth.js';
 import dashboardsRoutes from './routes/dashboards.js';
 import uploadRoutes from './routes/upload.js';
 import datasetRoutes from './routes/datasets.js';
+import paymentRoutes from './routes/payment.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -41,6 +42,7 @@ app.use('/api/auth', oauthRoutes);
 app.use('/api/dashboards', dashboardsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/datasets', datasetRoutes);
+app.use('/api/payment', paymentRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
