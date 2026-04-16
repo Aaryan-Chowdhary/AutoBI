@@ -67,7 +67,7 @@ function RegisterForm({ onNavigate }) {
       setError(res.error);
     }
   };
-
+// google login 
   const handleGoogleSignIn = async () => {
     try {
         setError('');
@@ -201,7 +201,7 @@ function RegisterForm({ onNavigate }) {
                     </div>
                 )}
 
-                {/* checkbox of terms and conditions 
+                
                 <div className="flex items-start gap-2 pt-1">
                 <input
                     type="checkbox"
@@ -214,7 +214,7 @@ function RegisterForm({ onNavigate }) {
                     I agree to the <a href="#" className="text-primary hover:underline font-medium">Terms</a> and <a href="#" className="text-primary hover:underline font-medium">Privacy Policy</a>
                 </label>
                 </div>
-                */}
+      
 
                 <button
                 type="submit"
