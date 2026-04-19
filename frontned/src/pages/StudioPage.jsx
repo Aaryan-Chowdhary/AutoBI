@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { api } from '../lib/api';
+import { useDatasets } from '../context/DatasetContext';
 
 const VisualsLibrary = [
   { id: 'bar', name: 'Bar Chart', icon: 'bar_chart', category: 'Comparison' },
