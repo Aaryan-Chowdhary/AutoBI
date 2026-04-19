@@ -110,6 +110,20 @@ function HomePage() {
     navigate(`/studio/${dashboardId}`);
   };
 
+  const handleDeleteDashboard = async (dashboardId) => {
+    if (!window.confirm('Are you sure you want to delete this dashboard? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await api(`/dashboards/${dashboardId}`, { method: 'DELETE' });
+      setDbDashboards(prev => prev.filter(d => d.id !== dashboardId));
+      setOpenMenuId(null);
+    } catch (err) {
+      console.error('Failed to delete dashboard:', err);
+      alert('Failed to delete dashboard.');
+    }
+  };
+
   return (
     <div className="h-screen flex bg-[#f8f9fb] overflow-hidden">
       <Sidebar />
@@ -209,6 +223,7 @@ function HomePage() {
                             isPinned={true}
                             onTogglePin={togglePin}
                             onOpen={handleOpenStudio}
+                            onDelete={handleDeleteDashboard}
                             ThumbComponent={ThumbComponent}
                             openMenuId={openMenuId}
                             setOpenMenuId={setOpenMenuId}
@@ -232,6 +247,7 @@ function HomePage() {
                       isPinned={pinnedDashboards.includes(dashboard.id)}
                       onTogglePin={togglePin}
                       onOpen={handleOpenStudio}
+                      onDelete={handleDeleteDashboard}
                       ThumbComponent={ThumbComponent}
                       openMenuId={openMenuId}
                       setOpenMenuId={setOpenMenuId}
@@ -264,15 +280,15 @@ function HomePage() {
   );
 }
 
-function DashboardCard({ dashboard, isPinned, onTogglePin, onOpen, ThumbComponent, openMenuId, setOpenMenuId }) {
+function DashboardCard({ dashboard, isPinned, onTogglePin, onOpen, onDelete, ThumbComponent, openMenuId, setOpenMenuId }) {
   const isMenuOpen = openMenuId === dashboard.id;
 
   return (
     <div
       onClick={() => onOpen(dashboard.id)}
-      className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+      className="group bg-white rounded-2xl border border-gray-200 hover:shadow-lg hover:border-gray-300 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative"
     >
-      <div className="h-32 bg-linear-to-br from-blue-50 to-slate-50 flex items-center justify-center p-4 relative">
+      <div className="h-32 bg-linear-to-br from-blue-50 to-slate-50 flex items-center justify-center p-4 relative overflow-hidden rounded-t-2xl">
         <ThumbComponent />
         <button
           onClick={(e) => { e.stopPropagation(); onTogglePin(dashboard.id); }}
@@ -290,7 +306,7 @@ function DashboardCard({ dashboard, isPinned, onTogglePin, onOpen, ThumbComponen
       <div className="p-4 flex items-center justify-between">
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-semibold text-[#111318] truncate">{dashboard.name}</h3>
-          <p className="text-xs text-gray-400 mt-0.5">{dashboard.editedAt}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{dashboard.editedAt || new Date(dashboard.updated_at).toLocaleDateString()}</p>
         </div>
         <div className="relative">
           <button
@@ -298,7 +314,7 @@ function DashboardCard({ dashboard, isPinned, onTogglePin, onOpen, ThumbComponen
               e.stopPropagation();
               setOpenMenuId(isMenuOpen ? null : dashboard.id);
             }}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors opacity-0 group-hover:opacity-100"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <span className="material-symbols-outlined text-xl">more_vert</span>
           </button>
@@ -313,7 +329,7 @@ function DashboardCard({ dashboard, isPinned, onTogglePin, onOpen, ThumbComponen
                 Rename
               </button>
               <div className="h-px bg-gray-100 my-1" />
-              <button className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors">
+              <button onClick={(e) => { e.stopPropagation(); onDelete(dashboard.id); }} className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-50 flex items-center gap-2.5 transition-colors">
                 <span className="material-symbols-outlined text-base">delete</span>
                 Delete
               </button>

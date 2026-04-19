@@ -43,6 +43,8 @@ app.use('/api/dashboards', dashboardsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/datasets', datasetRoutes);
 app.use('/api/payment', paymentRoutes);
+import aiRoutes from './routes/ai.routes.js';
+app.use('/api/ai', aiRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

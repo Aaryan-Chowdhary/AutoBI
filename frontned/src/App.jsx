@@ -13,6 +13,7 @@ import DatasetsPage from './pages/DatasetsPage';
 import StudioPage from './pages/StudioPage';
 import SettingsPage from './pages/SettingsPage';
 import UploadPage from './pages/UploadPage';
+import ChatPage from './pages/ChatPage';
 import PageLoader from './components/PageLoader';
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
           <Route path="/studio" element={<StudioPage />} />
           <Route path="/studio/:dashboardId" element={<StudioPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/chat" element={<ChatPage />} />
         </Routes>
       </Router>
       </DatasetProvider>

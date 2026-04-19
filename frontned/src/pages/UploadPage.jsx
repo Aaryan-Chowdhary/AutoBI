@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
+import { api } from '../lib/api';
 
 function UploadPage() {
   const [file, setFile] = useState(null);
@@ -9,6 +10,7 @@ function UploadPage() {
   const [uploadState, setUploadState] = useState('idle'); // 'idle', 'processing', 'done', 'error'
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [makingDashboard, setMakingDashboard] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -265,12 +267,56 @@ function UploadPage() {
                   </a>
                   
                   <button 
-                    onClick={() => navigate('/studio/new')}
-                    className="flex flex-col items-center p-4 bg-linear-to-br from-primary to-blue-600 border border-transparent rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all group"
+                    onClick={async () => {
+                      setMakingDashboard(true);
+                      try {
+                        // Get the cleaned file name from the download URL
+                        const cleanedFileName = result?.downloadUrl?.split('/').pop() || file?.name;
+                        
+                        // Step 1: Call AI to auto-generate dashboard charts
+                        const aiRes = await api('/ai/auto-dashboard', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ datasetName: cleanedFileName })
+                        });
+
+                        if (!aiRes.success) throw new Error('AI dashboard generation failed');
+
+                        // Step 2: Create a new dashboard in the DB
+                        const dashRes = await api('/dashboards', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: aiRes.dashboardName || `${cleanedFileName} Dashboard`,
+                            dataset_id: null,
+                            layout_json: [],
+                            visuals_json: aiRes.canvasElements
+                          })
+                        });
+
+                        // Step 3: Navigate to the new dashboard
+                        navigate(`/studio/${dashRes.id}`);
+                      } catch (err) {
+                        console.error('Make Dashboard error:', err);
+                        alert('Failed to create dashboard: ' + (err.message || 'Unknown error'));
+                        // Fallback: navigate to empty studio
+                        navigate('/studio/new');
+                      } finally {
+                        setMakingDashboard(false);
+                      }
+                    }}
+                    disabled={makingDashboard}
+                    className={`flex flex-col items-center p-4 bg-linear-to-br from-primary to-blue-600 border border-transparent rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all group ${makingDashboard ? 'opacity-70 cursor-wait' : ''}`}
                   >
-                    <span className="material-symbols-outlined text-2xl text-blue-200 group-hover:text-white mb-1.5 transition-colors">dashboard_customize</span>
-                    <span className="text-sm font-bold text-white">Make Dashboard</span>
-                    <span className="text-[11px] text-blue-100">Dive into the Studio</span>
+                    <span className={`material-symbols-outlined text-2xl text-blue-200 group-hover:text-white mb-1.5 transition-colors ${makingDashboard ? 'animate-spin' : ''}`}>
+                      {makingDashboard ? 'hourglass_empty' : 'dashboard_customize'}
+                    </span>
+                    <span className="text-sm font-bold text-white">
+                      {makingDashboard ? 'Creating Dashboard...' : 'Make Dashboard'}
+                    </span>
+                    <span className="text-[11px] text-blue-100">
+                      {makingDashboard ? 'AI is analyzing your data' : 'AI-powered auto dashboard'}
+                    </span>
                   </button>
                 </div>
               </div>

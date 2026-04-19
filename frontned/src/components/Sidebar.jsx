@@ -7,6 +7,7 @@ const navItems = [
   { id: 'workspace', label: 'dashboard', icon: 'dashboard', path: '/home' },
   { id: 'datasets', label: 'datasets', icon: 'database', path: '/datasets' },
   { id: 'studio', label: 'studio', icon: 'brush', path: '/studio' },
+  { id: 'chat', label: 'chat', icon: 'chat', path: '/chat' },
 ];
 
 const bottomItems = [
