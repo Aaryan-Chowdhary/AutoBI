@@ -70,6 +70,9 @@ function HomePage() {
   const navigate = useNavigate();
   const [dbDashboards, setDbDashboards] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [showDatasetModal, setShowDatasetModal] = React.useState(false);
+  const [selectedDataset, setSelectedDataset] = React.useState(null);
+  const [createLoading, setCreateLoading] = React.useState(false);
 
   // Current session timestamp formatted
   const currentSessionTimestamp = new Date().toLocaleString('en-IN', { 
@@ -123,6 +126,31 @@ function HomePage() {
       alert('Failed to delete dashboard.');
     }
   };
+
+  const handleCreateFromDataset = async () => {
+    if (!selectedDataset) return;
+    setCreateLoading(true);
+    try {
+      const newDash = await api('/dashboards', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: selectedDataset.name.replace(/\.csv$/i, '') + ' Dashboard',
+          dataset_id: selectedDataset.id,
+        })
+      });
+      setShowDatasetModal(false);
+      setSelectedDataset(null);
+      navigate(`/studio/${newDash.id}`);
+    } catch (err) {
+      console.error('Failed to create dashboard:', err);
+      alert('Failed to create dashboard. Please try again.');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  // Only cleaned datasets shown in the picker modal
+  const cleanedDatasets = datasets.filter(d => d.name?.toLowerCase().startsWith('cleaned_'));
 
   return (
     <div className="h-screen flex bg-[#f8f9fb] overflow-hidden">
@@ -180,19 +208,19 @@ function HomePage() {
               </div>
             </div>
 
-            <div 
-              onClick={() => handleOpenStudio('new')}
+            <div
+              onClick={() => { setSelectedDataset(null); setShowDatasetModal(true); }}
               className="group bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg hover:border-violet-300/50 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden"
             >
-              <div className="absolute -right-6 -bottom-6 w-28 h-28 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-blue-100 rounded-full opacity-0 group-hover:opacity-60 transition-opacity duration-500 delay-100" />
+              <div className="absolute -right-6 -bottom-6 w-28 h-28 bg-violet-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-violet-100 rounded-full opacity-0 group-hover:opacity-60 transition-opacity duration-500 delay-100" />
               <div className="relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg shadow-violet-200/50 mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg shadow-violet-200/50 mb-5">
                   <span className="material-symbols-outlined text-white text-2xl">dashboard_customize</span>
                 </div>
                 <h3 className="text-base font-bold text-[#111318] mb-2">Create With Cleaned Data</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-5">
-                  Create The Dashbaords Using Clean Datasets. Get insights, Drag and drop charts, KPIs, and tables onto a blank canvas.
+                  Create dashboards using your cleaned datasets. Get insights, drag and drop charts, KPIs, and tables onto a canvas.
                 </p>
                 <span className="text-violet-500 text-sm font-semibold inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                   Get Started
@@ -276,6 +304,114 @@ function HomePage() {
           )}
         </main>
       </div>
+
+      {/* ── Dataset Selector Modal ─────────────────────────────────── */}
+      {showDatasetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowDatasetModal(false)}>
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+          {/* Modal */}
+          <div
+            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg shadow-violet-200/50">
+                    <span className="material-symbols-outlined text-white text-xl">folder_open</span>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Select a Cleaned Dataset</h2>
+                    <p className="text-xs text-gray-400">Only your cleaned files are shown</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDatasetModal(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-xl">close</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Dataset list */}
+            <div className="px-6 py-4 max-h-72 overflow-y-auto flex flex-col gap-2">
+              {cleanedDatasets.length === 0 ? (
+                <div className="py-10 text-center">
+                  <span className="material-symbols-outlined text-5xl text-gray-200 block mb-3">folder_off</span>
+                  <p className="text-sm font-bold text-gray-400">No cleaned datasets found</p>
+                  <p className="text-xs text-gray-400 mt-1">Upload and clean a raw file first to see it here.</p>
+                  <button
+                    onClick={() => { setShowDatasetModal(false); navigate('/upload'); }}
+                    className="mt-4 px-4 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-xl hover:bg-blue-100 transition-all"
+                  >
+                    Go to Upload →
+                  </button>
+                </div>
+              ) : (
+                cleanedDatasets.map(ds => (
+                  <button
+                    key={ds.id}
+                    onClick={() => setSelectedDataset(ds)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left ${
+                      selectedDataset?.id === ds.id
+                        ? 'border-violet-500 bg-violet-50'
+                        : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {/* File icon */}
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      selectedDataset?.id === ds.id ? 'bg-violet-100' : 'bg-emerald-50'
+                    }`}>
+                      <span className={`material-symbols-outlined text-[20px] ${
+                        selectedDataset?.id === ds.id ? 'text-violet-500' : 'text-emerald-500'
+                      }`}>table_chart</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{ds.name}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        {ds.row_count ? `${ds.row_count.toLocaleString()} rows` : ''}
+                        {ds.row_count && ds.created_at ? '  ·  ' : ''}
+                        {ds.created_at ? new Date(ds.created_at).toLocaleDateString() : ''}
+                      </p>
+                    </div>
+                    {selectedDataset?.id === ds.id && (
+                      <span className="material-symbols-outlined text-violet-500 shrink-0" style={{ fontVariationSettings: '"FILL" 1' }}>check_circle</span>
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-3">
+              <button
+                onClick={() => setShowDatasetModal(false)}
+                className="px-4 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateFromDataset}
+                disabled={!selectedDataset || createLoading}
+                className={`flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-violet-200/50 transition-all ${
+                  !selectedDataset || createLoading
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-violet-700 hover:scale-[1.02] active:scale-[0.98]'
+                }`}
+              >
+                <span className={`material-symbols-outlined text-lg ${createLoading ? 'animate-spin' : ''}`}>
+                  {createLoading ? 'hourglass_empty' : 'dashboard_customize'}
+                </span>
+                {createLoading ? 'Creating...' : 'Create Dashboard'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

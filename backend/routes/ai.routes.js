@@ -12,6 +12,36 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
+// ─── GET /api/ai/schema?datasetName=xxx ──────────────────────────────
+// Returns column names + inferred types from a CSV file on disk.
+// Used as fallback when DB schema is missing.
+router.get('/schema', (req, res) => {
+  try {
+    const { datasetName } = req.query;
+    if (!datasetName) return res.status(400).json({ error: 'datasetName required' });
+
+    let filePath = path.join(__dirname, '../uploads', datasetName);
+    if (!fs.existsSync(filePath)) {
+      const withCsv = path.join(__dirname, '../uploads', datasetName + '.csv');
+      if (fs.existsSync(withCsv)) filePath = withCsv;
+      else return res.status(404).json({ error: 'Dataset file not found' });
+    }
+
+    const { schema, sampleData } = extractSchemaAndData(filePath);
+
+    const fields = Object.entries(schema).map(([name, type]) => ({
+      name,
+      type,
+      role: type === 'number' ? 'measure' : 'dimension',
+    }));
+
+    return res.json({ success: true, fields, sampleData });
+  } catch (err) {
+    console.error('Schema Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Utility: Guess Column Types ─────────────────────────────────────
 function extractSchemaAndData(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -150,10 +180,15 @@ router.post('/auto-dashboard', async (req, res) => {
     
     if (!datasetName) return res.status(400).json({ error: 'datasetName required' });
 
-    // Find the file
-    const filePath = path.join(__dirname, '../uploads', datasetName);
+    // Resolve actual file path — try exact name, then with .csv appended
+    let filePath = path.join(__dirname, '../uploads', datasetName);
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'Dataset file not found on disk' });
+      const withCsv = path.join(__dirname, '../uploads', datasetName + '.csv');
+      if (fs.existsSync(withCsv)) {
+        filePath = withCsv;
+      } else {
+        return res.status(404).json({ error: `Dataset file not found: "${datasetName}". Make sure the file is in uploads/.` });
+      }
     }
 
     const { schema, sampleData, fullCsvString } = extractSchemaAndData(filePath);
@@ -378,4 +413,86 @@ Answer:
   }
 });
 
+// ─── POST /api/ai/query (Direct ALASQL aggregation, no LLM) ─────────
+router.post('/query', async (req, res) => {
+  try {
+    const { datasetName, chartType, xAxis, yAxis, aggregation = 'SUM' } = req.body;
+    if (!datasetName) return res.status(400).json({ error: 'datasetName required' });
+
+    let filePath = path.join(__dirname, '../uploads', datasetName);
+    if (!fs.existsSync(filePath)) {
+      const withCsv = path.join(__dirname, '../uploads', datasetName + '.csv');
+      if (fs.existsSync(withCsv)) filePath = withCsv;
+      else return res.status(404).json({ error: 'Dataset file not found' });
+    }
+
+    const { fullCsvString } = extractSchemaAndData(filePath);
+    const allRecords = parse(fullCsvString, { columns: true, skip_empty_lines: true, cast: true });
+
+    let data = [];
+    if (chartType === 'kpi') {
+      const aggFn = aggregation || 'SUM';
+      const query = `SELECT ${aggFn}([${yAxis}]) AS val FROM ?`;
+      const result = alasql(query, [allRecords]);
+      data = [{ name: yAxis, value: result[0]?.val ?? 0 }];
+    } else {
+      const aggFn = aggregation || 'SUM';
+      const query = `SELECT [${xAxis}] AS name, ${aggFn}([${yAxis}]) AS val FROM ? GROUP BY [${xAxis}] ORDER BY val DESC LIMIT 15`;
+      const result = alasql(query, [allRecords]);
+      data = result.map(r => ({ name: r.name, value: r.val }));
+    }
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('Query Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── POST /api/ai/chart-insights (selected visual insight) ──────────
+
+router.post('/chart-insights', async (req, res) => {
+  try {
+    const { chartType, title, data, xAxis, yAxis } = req.body;
+
+    if (!chartType || !data) {
+      return res.status(400).json({ error: 'chartType and data are required' });
+    }
+
+    const insightPrompt = `
+You are an expert AI Business Intelligence Analyst inside AutoBI Studio.
+A user has selected a chart/visual on their dashboard and wants to understand what it means.
+
+Chart Details:
+- Type: ${chartType.toUpperCase()} ${chartType === 'kpi' ? 'Card' : 'Chart'}
+- Title: "${title}"
+- X-Axis (Dimension): ${xAxis || 'N/A'}
+- Y-Axis (Measure): ${yAxis || 'N/A'}
+- Data (up to 12 data points): ${JSON.stringify(data?.slice(0, 12))}
+
+TASK: Provide a clear, concise business insight about this chart. Your response must:
+1. Start with a 1-sentence summary of what the chart shows (the headline insight).
+2. Then give 2-3 bullet points (use • symbol) identifying:
+   - The highest/lowest value and what it means
+   - Any notable trend, pattern, or outlier
+   - A business implication or recommended action
+3. Keep total response under 120 words. Be direct and actionable. No markdown formatting, no code blocks.
+
+Respond in PLAIN TEXT only.
+`;
+
+    const insightText = await generateAIContent(insightPrompt);
+
+    return res.json({
+      success: true,
+      insight: insightText.trim()
+    });
+
+  } catch (error) {
+    console.error('Chart Insights Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
+
